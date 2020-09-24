@@ -57,7 +57,6 @@ function run() {
                 repo,
                 title: nextMilestoneVersion
             });
-            core.debug(`moving open ${currentMilestoneVersion} issues to ${nextMilestoneVersion}`);
             const { data: currentMilestoneOpenIssues } = yield client.issues.list({
                 owner,
                 repo,
@@ -65,20 +64,21 @@ function run() {
                 milestone: latestSemverTaggedMilestone.number,
                 per_page: resultThreshold
             });
+            core.debug(`moving ${currentMilestoneOpenIssues.length + 1} open ${currentMilestoneVersion} issue(s) to ${nextMilestoneVersion}`);
             yield Promise.all(currentMilestoneOpenIssues.map(({ number: issue_number }) => client.issues.update({
                 owner,
                 repo,
                 issue_number,
                 milestone: nextMilestone.number
             })));
-            core.debug(`moving open ${currentMilestoneVersion} pulls to ${nextMilestoneVersion}`);
             const { data: allOpenPulls } = yield client.pulls.list({
                 owner,
                 repo,
                 state: "open"
             });
             // we do this since the REST API doesn't allow milestone filtering
-            const currentMilestoneOpenPulls = allOpenPulls.filter(({ milestone: { number } }) => number === latestSemverTaggedMilestone.number);
+            const currentMilestoneOpenPulls = allOpenPulls.filter(({ milestone }) => (milestone === null || milestone === void 0 ? void 0 : milestone.number) === latestSemverTaggedMilestone.number);
+            core.debug(`moving open ${currentMilestoneOpenPulls.length + 1} ${currentMilestoneVersion} pull(s) to ${nextMilestoneVersion}`);
             yield Promise.all(currentMilestoneOpenPulls.map(({ number: issue_number }) => client.issues.update({
                 owner,
                 repo,
