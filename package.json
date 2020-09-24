@@ -4,8 +4,9 @@
   "description": "Moves issues and pull requests to the next milestone if it is released and tagged",
   "main": "dist/index.js",
   "scripts": {
-    "build": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
+  "private": true,
   "keywords": [
     "github",
     "actions",
