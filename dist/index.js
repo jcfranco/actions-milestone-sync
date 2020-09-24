@@ -32,13 +32,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
-const github_1 = __importDefault(require("@actions/github"));
+const github_1 = __importStar(require("@actions/github"));
 const semver_1 = __importDefault(require("semver"));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput("repo-token", { required: true });
-            const client = new github_1.default.GitHub(token);
+            const client = github_1.getOctokit(token);
             const { owner, repo } = github_1.default.context.repo;
             core.debug(`fetching open milestones`);
             const { data: milestones } = yield client.issues.listMilestones({
@@ -50,6 +50,7 @@ function run() {
             const [latestSemverTaggedMilestone] = milestones.filter(({ title }) => title.includes(`-${prereleaseId}.`) && semver_1.default.valid(title)).sort(({ title: title1 }, { title: title2 }) => semver_1.default.rcompare(title1, title2));
             const currentMilestoneVersion = latestSemverTaggedMilestone.title;
             const nextMilestoneVersion = `v${semver_1.default.inc(currentMilestoneVersion, "prerelease", prereleaseId)}`;
+            const resultThreshold = 100;
             core.debug(`creating next milestone (${nextMilestoneVersion})`);
             const { data: nextMilestone } = yield client.issues.createMilestone({
                 owner,
@@ -57,11 +58,12 @@ function run() {
                 title: nextMilestoneVersion
             });
             core.debug(`moving open ${currentMilestoneVersion} issues to ${nextMilestoneVersion}`);
-            const { data: currentMilestoneOpenIssues } = yield client.issues.get({
+            const { data: currentMilestoneOpenIssues } = yield client.issues.list({
                 owner,
                 repo,
                 state: "open",
-                milestone: latestSemverTaggedMilestone.number
+                milestone: latestSemverTaggedMilestone.number,
+                per_page: resultThreshold
             });
             yield Promise.all(currentMilestoneOpenIssues.map(({ number: issue_number }) => client.issues.update({
                 owner,
@@ -70,7 +72,7 @@ function run() {
                 milestone: nextMilestone.number
             })));
             core.debug(`moving open ${currentMilestoneVersion} pulls to ${nextMilestoneVersion}`);
-            const { data: allOpenPulls } = yield client.pulls.get({
+            const { data: allOpenPulls } = yield client.pulls.list({
                 owner,
                 repo,
                 state: "open"
@@ -87,7 +89,7 @@ function run() {
             yield client.issues.updateMilestone({
                 owner,
                 repo,
-                title: currentMilestoneVersion,
+                milestone_number: latestSemverTaggedMilestone.number,
                 state: "closed"
             });
         }
