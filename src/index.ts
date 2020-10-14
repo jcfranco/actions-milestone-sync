@@ -1,12 +1,12 @@
 import * as core from "@actions/core";
-import github, { getOctokit } from "@actions/github";
+import { context, getOctokit } from "@actions/github";
 import semver from "semver";
 
 async function run(): Promise<void> {
   try {
     const token = core.getInput("repo-token", { required: true });
     const client = getOctokit(token);
-    const { owner, repo } = github.context.repo;
+    const { owner, repo } = context.repo;
 
     core.debug(`fetching open milestones`);
 
