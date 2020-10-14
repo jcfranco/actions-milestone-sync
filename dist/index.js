@@ -7956,14 +7956,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(4880));
-const github_1 = __importStar(__webpack_require__(4737));
+const github_1 = __webpack_require__(4737);
 const semver_1 = __importDefault(__webpack_require__(2157));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput("repo-token", { required: true });
             const client = github_1.getOctokit(token);
-            const { owner, repo } = github_1.default.context.repo;
+            const { owner, repo } = github_1.context.repo;
             core.debug(`fetching open milestones`);
             const { data: milestones } = yield client.issues.listMilestones({
                 owner,
