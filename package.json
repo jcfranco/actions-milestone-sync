@@ -1,6 +1,6 @@
 {
   "name": "actions-milestone-sync",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Moves issues and pull requests to the next milestone if it is released and tagged",
   "main": "dist/index.js",
   "scripts": {
