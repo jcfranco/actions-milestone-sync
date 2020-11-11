@@ -41,7 +41,7 @@ async function run(): Promise<void> {
 
     core.debug(`moving ${currentMilestoneOpenIssues.length + 1} open ${currentMilestoneVersion} issue(s) to ${nextMilestoneVersion}`);
 
-    await Promise.all(currentMilestoneOpenIssues.map(({ number: issue_number }) =>
+    await Promise.allSettled(currentMilestoneOpenIssues.map(({ number: issue_number }) =>
       client.issues.update({
         owner,
         repo,
@@ -61,7 +61,7 @@ async function run(): Promise<void> {
 
     core.debug(`moving open ${currentMilestoneOpenPulls.length + 1} ${currentMilestoneVersion} pull(s) to ${nextMilestoneVersion}`);
 
-    await Promise.all(currentMilestoneOpenPulls.map(({ number: issue_number }) =>
+    await Promise.allSettled(currentMilestoneOpenPulls.map(({ number: issue_number }) =>
       client.issues.update({
         owner,
         repo,
