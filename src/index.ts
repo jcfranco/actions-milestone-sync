@@ -8,7 +8,7 @@ async function run(): Promise<void> {
     const client = getOctokit(token);
     const { owner, repo } = context.repo;
 
-    core.debug(`fetching open milestones`);
+    core.info(`fetching open milestones`);
 
     const { data: milestones } = await client.issues.listMilestones({
       owner,
@@ -22,7 +22,13 @@ async function run(): Promise<void> {
     const nextMilestoneVersion = `v${semver.inc(currentMilestoneVersion, "prerelease", prereleaseId)}`;
     const resultThreshold = 100;
 
-    core.debug(`creating next milestone (${nextMilestoneVersion})`);
+    core.debug(`
+      release ID: ${prereleaseId}
+      current milestone: ${currentMilestoneVersion}
+      next milestone: ${nextMilestoneVersion}
+    `);
+
+    core.info(`creating next milestone (${nextMilestoneVersion})`);
 
     const { data: nextMilestone } = await client.issues.createMilestone({
       owner,
@@ -30,6 +36,7 @@ async function run(): Promise<void> {
       title: nextMilestoneVersion
     });
 
+    core.debug("next milestone created");
 
     const { data: currentMilestoneOpenIssues } = await client.issues.list({
       owner,
@@ -39,7 +46,7 @@ async function run(): Promise<void> {
       per_page: resultThreshold
     });
 
-    core.debug(`moving ${currentMilestoneOpenIssues.length + 1} open ${currentMilestoneVersion} issue(s) to ${nextMilestoneVersion}`);
+    core.info(`moving ${currentMilestoneOpenIssues.length + 1} open ${currentMilestoneVersion} issue(s) to ${nextMilestoneVersion}`);
 
     await Promise.allSettled(currentMilestoneOpenIssues.map(({ number: issue_number }) =>
       client.issues.update({
@@ -50,6 +57,10 @@ async function run(): Promise<void> {
       })
     ));
 
+    core.debug("open issues moved");
+
+    core.debug("fetching open pull requests");
+
     const { data: allOpenPulls } = await client.pulls.list({
       owner,
       repo,
@@ -59,7 +70,7 @@ async function run(): Promise<void> {
     // we do this since the REST API doesn't allow milestone filtering
     const currentMilestoneOpenPulls = allOpenPulls.filter(({ milestone }) => milestone?.number === latestSemverTaggedMilestone.number);
 
-    core.debug(`moving open ${currentMilestoneOpenPulls.length + 1} ${currentMilestoneVersion} pull(s) to ${nextMilestoneVersion}`);
+    core.info(`moving open ${currentMilestoneOpenPulls.length + 1} ${currentMilestoneVersion} pull(s) to ${nextMilestoneVersion}`);
 
     await Promise.allSettled(currentMilestoneOpenPulls.map(({ number: issue_number }) =>
       client.issues.update({
@@ -70,7 +81,9 @@ async function run(): Promise<void> {
       })
     ));
 
-    core.debug(`closing milestone ${currentMilestoneVersion}`);
+    core.debug("open pull requests moved");
+
+    core.info(`closing milestone ${currentMilestoneVersion}`);
 
     await client.issues.updateMilestone({
       owner,
@@ -78,6 +91,9 @@ async function run(): Promise<void> {
       milestone_number: latestSemverTaggedMilestone.number,
       state: "closed"
     });
+
+    core.debug("milestone closed");
+
   } catch (error) {
     core.error(error);
     core.setFailed(error.message);
