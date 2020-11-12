@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES6",
+    "lib": [ "ES6", "ES2020.Promise" ],
     "module": "commonjs",
     "outDir": "./dist",
     "strict": true,
