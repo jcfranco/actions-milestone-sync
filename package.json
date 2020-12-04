@@ -4,7 +4,7 @@
   "description": "Moves issues and pull requests to the next milestone if it is released and tagged",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npx ncc build ./src/index.ts --license licenses.txt"
+    "build": "npx @vercel/ncc build ./src/index.ts --license licenses.txt"
   },
   "private": true,
   "keywords": [
