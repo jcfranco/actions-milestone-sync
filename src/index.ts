@@ -48,14 +48,14 @@ async function run(): Promise<void> {
 
     core.info(`moving ${currentMilestoneOpenIssues.length + 1} open ${currentMilestoneVersion} issue(s) to ${nextMilestoneVersion}`);
 
-    await Promise.allSettled(currentMilestoneOpenIssues.map(({ number: issue_number }) =>
-      client.issues.update({
+    for (let { number: issue_number } of currentMilestoneOpenIssues) {
+      await client.issues.update({
         owner,
         repo,
         issue_number,
         milestone: nextMilestone.number
-      })
-    ));
+      });
+    }
 
     core.debug("open issues moved");
 
@@ -72,14 +72,14 @@ async function run(): Promise<void> {
 
     core.info(`moving open ${currentMilestoneOpenPulls.length + 1} ${currentMilestoneVersion} pull(s) to ${nextMilestoneVersion}`);
 
-    await Promise.allSettled(currentMilestoneOpenPulls.map(({ number: issue_number }) =>
-      client.issues.update({
+    for (let { number: issue_number } of currentMilestoneOpenPulls) {
+      await client.issues.update({
         owner,
         repo,
         issue_number,
         milestone: nextMilestone.number
-      })
-    ));
+      });
+    }
 
     core.debug("open pull requests moved");
 
