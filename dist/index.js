@@ -7995,12 +7995,14 @@ function run() {
                 per_page: resultThreshold
             });
             core.info(`moving ${currentMilestoneOpenIssues.length + 1} open ${currentMilestoneVersion} issue(s) to ${nextMilestoneVersion}`);
-            yield Promise.allSettled(currentMilestoneOpenIssues.map(({ number: issue_number }) => client.issues.update({
-                owner,
-                repo,
-                issue_number,
-                milestone: nextMilestone.number
-            })));
+            for (let { number: issue_number } of currentMilestoneOpenIssues) {
+                yield client.issues.update({
+                    owner,
+                    repo,
+                    issue_number,
+                    milestone: nextMilestone.number
+                });
+            }
             core.debug("open issues moved");
             core.debug("fetching open pull requests");
             const { data: allOpenPulls } = yield client.pulls.list({
@@ -8011,12 +8013,14 @@ function run() {
             // we do this since the REST API doesn't allow milestone filtering
             const currentMilestoneOpenPulls = allOpenPulls.filter(({ milestone }) => (milestone === null || milestone === void 0 ? void 0 : milestone.number) === latestSemverTaggedMilestone.number);
             core.info(`moving open ${currentMilestoneOpenPulls.length + 1} ${currentMilestoneVersion} pull(s) to ${nextMilestoneVersion}`);
-            yield Promise.allSettled(currentMilestoneOpenPulls.map(({ number: issue_number }) => client.issues.update({
-                owner,
-                repo,
-                issue_number,
-                milestone: nextMilestone.number
-            })));
+            for (let { number: issue_number } of currentMilestoneOpenPulls) {
+                yield client.issues.update({
+                    owner,
+                    repo,
+                    issue_number,
+                    milestone: nextMilestone.number
+                });
+            }
             core.debug("open pull requests moved");
             core.info(`closing milestone ${currentMilestoneVersion}`);
             yield client.issues.updateMilestone({
